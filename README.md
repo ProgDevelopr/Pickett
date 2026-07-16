@@ -2,7 +2,9 @@
 A system-wide in memory file cache when you need backups
 
 *Installation:*
-* Build with pyinstaller (pip install pyinstaller):
+* Build with pyinstaller:
+
+> pip install pyinstaller
 
 * If you have PyQt5 and 6: 
 

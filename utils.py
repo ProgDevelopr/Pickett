@@ -1,28 +1,51 @@
+""" Utilities for Pickett """
+
 from json import load, dump
-from os import getlogin
 from os.path import exists
 
-CONFIG = f".\\cache.json"
-def load_config():
-    if not exists(CONFIG):
-        with open(CONFIG, "w") as f:
+CACHE_PATH = ".\\cache.json"
+def load_cache():
+    """
+    Loads the cache file, creates one if it doesn't exist.
+    """
+    if not exists(CACHE_PATH):
+        with open(CACHE_PATH, "w", encoding="utf-8") as f:
             f.write("{}")
-    with open(CONFIG,"r") as f:
+    with open(CACHE_PATH, "r", encoding="utf-8") as f:
         return dict(load(f))
 
-def change_config(conf_obj):
-    with open(CONFIG,"w") as f:
-        dump(conf_obj, f)
+def apply_changes(dict_obj):
+    """
+    Applies changes to cache.
+    
+    Args:
+        dict_obj (dict): The dict object that represents the cache.
+    """
+    with open(CACHE_PATH, "w", encoding="utf-8") as f:
+        dump(dict_obj, f)
 
 def read_f(file):
-    with open(file, "r") as f:
+    """
+    Reads a file.
+    
+    Args:
+        file (str): file name
+    """
+    with open(file, "r", encoding="utf-8") as f:
         return f.read()
 
 def write_f(file, content):
-    with open(file, "w") as f:
+    """
+    Writes to a file.
+    
+    Args:
+        file (str): file name
+    """
+    with open(file, "w", encoding="utf-8") as f:
         f.write(content)
 
-def help():
-    print("pickett add <KEY> <FILE>\npickett kill <KEY>/all")
-    print("pickett truncate <KEY>/all\npickett clean <KEY>/all")
-    print("pickett ow <FILE> <KEY> <Optional: RELEASE>\npickett list\npickett help")
+def pickett_help():
+    """ The help utility for pickett """
+    print("|- pickett add <KEY> <FILE>\n|- pickett kill <KEY>/all")
+    print("|- pickett truncate <KEY>/all\n|- pickett clean <KEY>/all")
+    print("|- pickett ow <FILE> <KEY> <Optional: RELEASE>\n|- pickett list\n'- pickett help")

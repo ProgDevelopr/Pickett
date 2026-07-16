@@ -1,108 +1,144 @@
-import utils
+""" Main Program - Pickett """
+
 from sys import argv
 from os.path import exists
+import utils
 
 argv = argv[1:]
 setting = argv[0]
-config = utils.load_config()
+cache = utils.load_cache()
 
 try:
     match setting.strip().lower():
         case "add":
-            if argv[1] in config:
-                if len(config[argv[1]])<3:
-                    config[argv[1]].append(utils.read_f(argv[2]))
-                    print(f"{argv[1]} already exists, added new release in it.")
-                else:
-                    print(f"Too many releases for key \"{argv[1]}\"!")
-                    option = input("Would you like to remove the oldest release for space? (y/n): ").strip().lower()[0]
-                    if option=="y":
-                        config[argv[1]].remove(config[argv[1]][0])
-                        print("Deleted oldest release...")
-                        config[argv[1]].append(utils.read_f(argv[2]))
-                        print("Added new release.")
-                    else:
-                        print("OK, but your release will not be saved!")
+            key = argv[1]
+            if len(argv)==2:
+                cache[key]=[]
+                print(f"Added new empty key: \"{key}\".")
             else:
-                config[argv[1]]=[utils.read_f(argv[2])]
-                print(f"New key was added: {argv[1]}")
+                if key in cache:
+                    if len(cache[key])<3:
+                        cache[key].append(utils.read_f(argv[2]))
+                        print(f"Added new release to {key}.")
+                    else:
+                        print(f"Too many releases for key \"{key}\"!")
+                        option = input("Would you like to remove the oldest release? (y/n): ")
+                        if option.strip().lower()[0]=="y":
+                            cache[key].remove(cache[key][0])
+                            print("Deleted oldest release...")
+                            cache[key].append(utils.read_f(argv[2]))
+                            print("Added new release.")
+                        else:
+                            print("OK, but your release will not be saved!")
+                else:
+                    cache[key]=[utils.read_f(argv[2])]
+                    print(f"New key was added: {key}")
 
         case "kill":
-            if argv[1].lower().strip()=="all":
-                config = {}
-                print("Deleted all keys in cache.")
-            else:
-                if argv[1] in config:
-                    config.pop(argv[1])
-                    print(f"Deleted key \"{argv[1]}\".")
+            if cache:
+                key = argv[1]
+                if key.lower().strip()=="all":
+                    cache = {}
+                    print("Deleted all keys in cache.")
                 else:
-                    print(f"Key \"{argv[1]}\" does not exist.")
+                    if key in cache:
+                        cache.pop(key)
+                        print(f"Deleted key \"{key}\".")
+                    else:
+                        print(f"Key \"{key}\" does not exist.")
+            else:
+                print("No keys found in cache.")
 
         case "ow":
-            try:
-                key = argv[2]
-                file = argv[1]
-                release = -1 if len(argv[1:]) != 3 else int(argv[3])-1
-                if release==-1 or 2 > release or release > 0:
-                    if key in config and exists(file):
-                        utils.write_f(file, config[key][release])
-                        print("Overwrite was successful.")
+            if cache:
+                try:
+                    file = argv[1]
+                    key = argv[2]
+                    release = -1
+                    if len(argv) == 4: # Because argv includes setting
+                        release = int(argv[3])
+
+                    if 3 > release > -2:
+                        if not key in cache:
+                            print(f"Key \"{key}\" does not exist.")
+                        if not exists(file):
+                            print(f"File \"{file}\" does not exist.")
+                        if exists(file) and key in cache:
+                            utils.write_f(file, cache[key][release])
+                            print("Overwrite was successful.")
                     else:
-                        print("An error has occured, please check if file exists or if key is in cache.")
-                else: 
-                    print("Please enter values between 1-3.")
-            except IndexError:
-                print("An index error has occured, please check cache.json.")
+                        print("Please enter values between 0-2. (self-included)")
+                except IndexError:
+                    print("An index error has occured, please check cache.json.")
 
         case "list":
-            if config:
-                for k,v in config.items():
-                    print(f"{k}:")
-                    for j in v:
-                        if len(j)>20:
-                            print(f"- {j[0:20]}...")
-                        else:
-                            print(f"- {j}")
+            if cache:
+                for k,v in cache.items(): # k = keys, v = arrays
+                    if v == []:
+                        print(f"* {k}: Empty key")
+                    else:
+                        print(f"* {k}:")
+                        for i,j in enumerate(v): # i = indices, j = values in v
+                            if i==len(v)-1:
+                                if len(j)>20:
+                                    print(f"'-({i}) {j[0:20]}...")
+                                else:
+                                    print(f"'-({i}) {j}")
+                            else:
+                                if len(j)>20:
+                                    print(f"|-({i}) {j[0:20]}...")
+                                else:
+                                    print(f"|-({i}) {j}")
+                    print()
+
             else:
-                print("No keys in cache.")
+                print("No keys found in cache.")
 
         case "truncate":
-            key = argv[1]
-            if key=="all":
-                for k,_ in config.items():
-                    config[k]=[]
-                print("Truncated all keys in cache.")
-            else:
-                if key in config:
-                    config[key]=[]
-                    print(f"Truncaated key \"{key}\".")
+            if cache:
+                key = argv[1]
+                if key=="all":
+                    for k,_ in cache.items():
+                        cache[k]=[]
+                    print("Truncated all keys in cache.")
                 else:
-                    print(f"Key \"{key}\" does not exist.")
+                    if key in cache:
+                        cache[key]=[]
+                        print(f"Truncated key \"{key}\".")
+                    else:
+                        print(f"Key \"{key}\" does not exist.")
+            else:
+                print("No keys found in cache.")
 
         case "clean":
-            if config:
+            if cache:
+                key = argv[1]
                 if argv[1]=="all":
-                    for k,v in config.items():
+                    for k,v in cache.items():
                         if len(v)>0:
-                            config[k]=[v[-1]]
+                            cache[k]=[v[-1]]
                             continue
                     print("Cleaning done!")
                 else:
-                    if argv[1] in config:
-                        config[argv[1]]=[config[argv[1]][-1]]
+                    if argv[1] in cache:
+                        cache[argv[1]]=[cache[argv[1]][-1]]
                         print(f"Cleaned key \"{argv[1]}\"!")
                     else:
                         print(f"Key \"{argv[1]}\" does not exist.")
             else:
-                print("No keys in cache.")
+                print("No keys found in cache.")
 
         case "help":
-            print("Commands: ")
-            utils.help()
+            print("* Commands: ")
+            utils.pickett_help()
 
         case _:
-            print("Please enter a proper setting: ")
-            utils.help()
+            print("* Please enter a proper setting: ")
+            utils.pickett_help()
+    utils.apply_changes(cache)
 except IndexError:
-    print("An index error has occured. Please make sure to enter arguments correctly.")
-utils.change_config(config)
+    print("An index error has occurred. Please make sure index exists in cache.")
+except ValueError:
+    print("Please enter proper arguments.")
+except Exception as e:
+    print(e)

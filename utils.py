@@ -23,6 +23,6 @@ def write_f(file, content):
         f.write(content)
     
 def help():
-    print("pickett add <KEY> <FILE>\npickett kill <KEY>")
-    print("pickett kill all\npickett truncate <KEY>\npicket truncate all")
+    print("pickett add <KEY> <FILE>\npickett kill <KEY>/all")
+    print("pickett truncate <KEY>/all\npickett clean <KEY>/all")
     print("pickett ow <FILE> <KEY> <Optional: RELEASE>\npickett list\npickett help")

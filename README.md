@@ -11,6 +11,6 @@
 
 * If you have only one: 
 
->pyinstaller --onefile --console --nowindowed --name "pickett" main.py
+> pyinstaller --onefile --console --nowindowed --name "pickett" main.py
 
 * Put the EXE wherever you want and start using!   

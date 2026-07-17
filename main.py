@@ -1,13 +1,17 @@
 """ Main Program - Pickett """
 
-from sys import argv
+from sys import argv, exit as ext
 from os.path import exists
 import utils
 
 argv = argv[1:]
-setting = argv[0]
 cache = utils.load_cache()
+if len(argv)==0:
+    print("* Pickett 2.0")
+    utils.pickett_help()
+    ext(0)
 
+setting = argv[0]
 try:
     match setting.strip().lower():
         case "add":
@@ -128,6 +132,9 @@ try:
             else:
                 print("No keys found in cache.")
 
+        case "version":
+            print("Pickett 2.0")
+        
         case "help":
             print("* Commands: ")
             utils.pickett_help()
@@ -138,7 +145,10 @@ try:
     utils.apply_changes(cache)
 except IndexError:
     print("An index error has occurred. Please make sure index exists in cache.")
+    ext(1)
 except ValueError:
     print("Please enter proper arguments.")
+    ext(1)
 except Exception as e:
     print(e)
+    ext(1)

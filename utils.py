@@ -46,6 +46,7 @@ def write_f(file, content):
 
 def pickett_help():
     """ The help utility for pickett """
-    print("|- pickett add <KEY> <FILE>\n|- pickett kill <KEY>/all")
+    print("|- pickett add <KEY> <Optional: FILE>\n|- pickett kill <KEY>/all")
     print("|- pickett truncate <KEY>/all\n|- pickett clean <KEY>/all")
-    print("|- pickett ow <FILE> <KEY> <Optional: RELEASE>\n|- pickett list\n'- pickett help")
+    print("|- pickett ow <FILE> <KEY> <Optional: RELEASE>\n|- pickett version")
+    print("|- pickett list\n'- pickett help")

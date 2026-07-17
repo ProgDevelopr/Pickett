@@ -23,7 +23,7 @@ try:
                 if key in cache:
                     if len(cache[key])<3:
                         cache[key].append(utils.read_f(argv[2]))
-                        print(f"Added new release to {key}.")
+                        print(f"Added new release to \"{key}\".")
                     else:
                         print(f"Too many releases for key \"{key}\"!")
                         option = input("Would you like to remove the oldest release? (y/n): ")
@@ -55,25 +55,24 @@ try:
 
         case "ow":
             if cache:
-                try:
-                    file = argv[1]
-                    key = argv[2]
-                    release = -1
-                    if len(argv) == 4: # Because argv includes setting
-                        release = int(argv[3])
+                file = argv[1]
+                key = argv[2]
+                release = -1
+                if len(argv) == 4: # Because argv includes setting
+                    release = int(argv[3])
 
-                    if 3 > release > -2:
-                        if not key in cache:
-                            print(f"Key \"{key}\" does not exist.")
-                        if not exists(file):
-                            print(f"File \"{file}\" does not exist.")
-                        if exists(file) and key in cache:
-                            utils.write_f(file, cache[key][release])
-                            print("Overwrite was successful.")
-                    else:
-                        print("Please enter values between 0-2. (self-included)")
-                except IndexError:
-                    print("An index error has occured, please check cache.json.")
+                if 3 > release > -2:
+                    if not key in cache:
+                        print(f"Key \"{key}\" does not exist.")
+                    if not exists(file):
+                        print(f"File \"{file}\" does not exist.")
+                    if exists(file) and key in cache:
+                        utils.write_f(file, cache[key][release])
+                        print("Overwrite was successful.")
+                else:
+                    print("Please enter values between 0-2. (self-included)")
+            else:
+                print("No keys found in cache.")
 
         case "list":
             if cache:
@@ -83,14 +82,15 @@ try:
                     else:
                         print(f"* {k}:")
                         for i,j in enumerate(v): # i = indices, j = values in v
+                            j = j.replace("\n","\\n")
                             if i==len(v)-1:
-                                if len(j)>20:
-                                    print(f"'-({i}) {j[0:20]}...")
+                                if len(j)>35:
+                                    print(f"'-({i}) {j[0:35]}...")
                                 else:
                                     print(f"'-({i}) {j}")
                             else:
-                                if len(j)>20:
-                                    print(f"|-({i}) {j[0:20]}...")
+                                if len(j)>35:
+                                    print(f"|-({i}) {j[0:35]}...")
                                 else:
                                     print(f"|-({i}) {j}")
                     print()
@@ -133,8 +133,8 @@ try:
                 print("No keys found in cache.")
 
         case "version":
-            print("Pickett 2.0")
-        
+            print("Pickett 2.1")
+
         case "help":
             print("* Commands: ")
             utils.pickett_help()

@@ -26,17 +26,18 @@ class TreeView:
             indexing = lambda x: f"({x})"
         print(f"* {self.header}")
         for index, item in enumerate(self.branches):
+            condition = len(item)<35 or not listing
             if index == len(self.branches)-1:
-                print(f"'-{indexing(index)} {item if len(item)<35 else f'{item[0:35]}...'}\n")
+                print(f"'-{indexing(index)} {item if condition else f'{item[0:35]}...'}\n")
             else:
-                print(f"|-{indexing(index)} {item if len(item)<35 else f'{item[0:35]}...'}")
+                print(f"|-{indexing(index)} {item if condition else f'{item[0:35]}...'}")
 
     def reset(self):
         """ Deletes tree's content. (just in case) """
         self.branches = []
 
 VALUE_CAP = 3
-PICKETT_VER = 2.4
+PICKETT_VER = 2.5
 CACHE_PATH = f"{expanduser('~')}\\cache.json"
 def load_cache():
     """
@@ -110,11 +111,14 @@ def pickett_help(header: str):
     tree_obj.add_branches([
         "pickett add <KEY> <Optional: FILE>",
         "pickett kill <KEY>/all",
-        "pickett list",
+        "pickett list <Optional: KEY>",
         "pickett truncate <KEY>/all",
         "pickett clean <KEY>/all",
-        "pickett ow <FILE> <KEY> <Optional: RELEASE>",
+        "pickett ow <FILE> <KEY> <Optional: RELEASE_INDEX>",
         "pickett stats",
+        "pickett import <JSON>",
+        "pickett export <Optional: NAME>",
+        "pickett where",
         "pickett version",
         "pickett help"
     ])

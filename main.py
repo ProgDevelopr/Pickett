@@ -2,6 +2,7 @@
 
 from sys import argv, exit as ext
 from os.path import exists
+from json import load, dump, JSONDecodeError
 import utils
 
 argv = argv[1:]
@@ -50,7 +51,7 @@ try:
                     else:
                         print(f"Key \"{key}\" does not exist!")
             else:
-                print("No keys found in cache.")
+                print("No keys found in cache!")
 
         case "ow":
             if cache:
@@ -63,24 +64,37 @@ try:
                 if utils.VALUE_CAP > release > -2:
                     if not key in cache:
                         print(f"Key \"{key}\" does not exist!")
+                        ext(1)
                     if not exists(file):
                         print(f"File \"{file}\" does not exist!")
-                    if exists(file) and key in cache:
-                        utils.write_f(file, cache[key][release])
-                        print(f"Overwrite to \"{file}\" was successful.")
+                        ext(1)
+                    utils.write_f(file, cache[key][release])
+                    print(f"Overwrite to \"{file}\" was successful.")
                 else:
                     print(f"Please enter values between 0-{utils.VALUE_CAP-1}. (self-included)")
             else:
-                print("No keys found in cache.")
+                print("No keys found in cache!")
 
         case "list":
             if cache:
-                for k,v in cache.items(): # k = keys, v = arrays
-                    if v == []:
-                        print(f"* {k}: Empty key\n")
+                if len(argv)==1:
+                    for k,v in cache.items(): # k = keys, v = arrays
+                        if v == []:
+                            print(f"* {k}: Empty key\n")
+                        else:
+                            tree_obj = utils.TreeView(str(k))
+                            tree_obj.add_branches([str(x).replace("\n","\\n") for x in v])
+                            tree_obj.view(listing = True)
+                else:
+                    key = argv[1]
+                    if not key in cache:
+                        print(f"Key \"{key}\" does not exist!")
+                        ext(1)
+                    if cache[key] == []:
+                        print(f"* {key}: Empty key\n")
                     else:
-                        tree_obj = utils.TreeView(str(k))
-                        tree_obj.add_branches([x.replace("\n","\\n") for x in v])
+                        tree_obj = utils.TreeView(str(key))
+                        tree_obj.add_branches([str(x).replace("\n","\\n") for x in cache[key]])
                         tree_obj.view(listing = True)
             else:
                 print("No keys found in cache.")
@@ -99,7 +113,7 @@ try:
                     else:
                         print(f"Key \"{key}\" does not exist!")
             else:
-                print("No keys found in cache.")
+                print("No keys found in cache!")
 
         case "clean":
             if cache:
@@ -117,7 +131,7 @@ try:
                     else:
                         print(f"Key \"{argv[1]}\" does not exist!")
             else:
-                print("No keys found in cache.")
+                print("No keys found in cache!")
 
         case "stats":
             tree_obj = utils.TreeView("config.json")
@@ -128,6 +142,33 @@ try:
             ])
             utils.value_warning(cache, tree_obj)
             tree_obj.view()
+
+        case "import":
+            if len(argv)<2:
+                print("Please enter file name.")
+                ext(1)
+            NEW_CACHE = argv[1] if argv[1].endswith(".json") else argv[1]+".json"
+            if not exists(NEW_CACHE):
+                print(f"{NEW_CACHE} does not exist.")
+                ext(1)
+            with open(NEW_CACHE, mode="r", encoding="utf-8") as f:
+                try:
+                    cache = dict(load(f))
+                except JSONDecodeError:
+                    print(f"\"{NEW_CACHE}\" is not a JSON file!")
+                    ext(1)
+            print(f"New cache imported from \"{NEW_CACHE}\".")
+
+        case "export":
+            EXPORT_NAME = "cache.json"
+            if len(argv)>1:
+                EXPORT_NAME = argv[1] if argv[1].endswith(".json") else argv[1]+".json"
+            with open(EXPORT_NAME, mode="w", encoding="utf-8") as f:
+                dump(cache, f)
+            print(f"Exported cache.json as \"{EXPORT_NAME}\".")
+
+        case "where":
+            print(f"Cache path: {utils.CACHE_PATH}")
 
         case "version":
             print(f"Pickett {utils.PICKETT_VER}")

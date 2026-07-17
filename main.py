@@ -7,8 +7,7 @@ import utils
 argv = argv[1:]
 cache = utils.load_cache()
 if len(argv)==0:
-    print("* Pickett 2.0")
-    utils.pickett_help()
+    utils.pickett_help(f"Pickett {utils.PICKETT_VER}")
     ext(0)
 
 setting = argv[0]
@@ -21,7 +20,7 @@ try:
                 print(f"Added new empty key: \"{key}\".")
             else:
                 if key in cache:
-                    if len(cache[key])<3:
+                    if len(cache[key])<utils.VALUE_CAP:
                         cache[key].append(utils.read_f(argv[2]))
                         print(f"Added new release to \"{key}\".")
                     else:
@@ -29,14 +28,14 @@ try:
                         option = input("Would you like to remove the oldest release? (y/n): ")
                         if option.strip().lower()[0]=="y":
                             cache[key].remove(cache[key][0])
-                            print("Deleted oldest release...")
+                            print("Deleting oldest release...")
                             cache[key].append(utils.read_f(argv[2]))
                             print("Added new release.")
                         else:
                             print("OK, but your release will not be saved!")
                 else:
                     cache[key]=[utils.read_f(argv[2])]
-                    print(f"New key was added: {key}")
+                    print(f"New key was added: \"{key}\"")
 
         case "kill":
             if cache:
@@ -49,7 +48,7 @@ try:
                         cache.pop(key)
                         print(f"Deleted key \"{key}\".")
                     else:
-                        print(f"Key \"{key}\" does not exist.")
+                        print(f"Key \"{key}\" does not exist!")
             else:
                 print("No keys found in cache.")
 
@@ -61,16 +60,16 @@ try:
                 if len(argv) == 4: # Because argv includes setting
                     release = int(argv[3])
 
-                if 3 > release > -2:
+                if utils.VALUE_CAP > release > -2:
                     if not key in cache:
-                        print(f"Key \"{key}\" does not exist.")
+                        print(f"Key \"{key}\" does not exist!")
                     if not exists(file):
-                        print(f"File \"{file}\" does not exist.")
+                        print(f"File \"{file}\" does not exist!")
                     if exists(file) and key in cache:
                         utils.write_f(file, cache[key][release])
-                        print("Overwrite was successful.")
+                        print(f"Overwrite to \"{file}\" was successful.")
                 else:
-                    print("Please enter values between 0-2. (self-included)")
+                    print(f"Please enter values between 0-{utils.VALUE_CAP-1}. (self-included)")
             else:
                 print("No keys found in cache.")
 
@@ -78,23 +77,11 @@ try:
             if cache:
                 for k,v in cache.items(): # k = keys, v = arrays
                     if v == []:
-                        print(f"* {k}: Empty key")
+                        print(f"* {k}: Empty key\n")
                     else:
-                        print(f"* {k}:")
-                        for i,j in enumerate(v): # i = indices, j = values in v
-                            j = j.replace("\n","\\n")
-                            if i==len(v)-1:
-                                if len(j)>35:
-                                    print(f"'-({i}) {j[0:35]}...")
-                                else:
-                                    print(f"'-({i}) {j}")
-                            else:
-                                if len(j)>35:
-                                    print(f"|-({i}) {j[0:35]}...")
-                                else:
-                                    print(f"|-({i}) {j}")
-                    print()
-
+                        tree_obj = utils.TreeView(str(k))
+                        tree_obj.add_branches([x.replace("\n","\\n") for x in v])
+                        tree_obj.view(listing = True)
             else:
                 print("No keys found in cache.")
 
@@ -110,7 +97,7 @@ try:
                         cache[key]=[]
                         print(f"Truncated key \"{key}\".")
                     else:
-                        print(f"Key \"{key}\" does not exist.")
+                        print(f"Key \"{key}\" does not exist!")
             else:
                 print("No keys found in cache.")
 
@@ -122,29 +109,37 @@ try:
                         if len(v)>0:
                             cache[k]=[v[-1]]
                             continue
-                    print("Cleaning done!")
+                    print("Cleaned all keys in cache.")
                 else:
                     if argv[1] in cache:
                         cache[argv[1]]=[cache[argv[1]][-1]]
-                        print(f"Cleaned key \"{argv[1]}\"!")
+                        print(f"Cleaned key \"{argv[1]}\".")
                     else:
-                        print(f"Key \"{argv[1]}\" does not exist.")
+                        print(f"Key \"{argv[1]}\" does not exist!")
             else:
                 print("No keys found in cache.")
 
+        case "stats":
+            tree_obj = utils.TreeView("config.json")
+            tree_obj.add_branches([
+                f"{utils.cache_size()}",
+                f"{len(cache.keys())} keys",
+                f"{sum(len(x) for x in cache.values())} values"
+            ])
+            utils.value_warning(cache, tree_obj)
+            tree_obj.view()
+
         case "version":
-            print("Pickett 2.1")
+            print(f"Pickett {utils.PICKETT_VER}")
 
         case "help":
-            print("* Commands: ")
-            utils.pickett_help()
+            utils.pickett_help("Commands: ")
 
         case _:
-            print("* Please enter a proper setting: ")
-            utils.pickett_help()
+            utils.pickett_help("Please enter a proper setting: ")
     utils.apply_changes(cache)
 except IndexError:
-    print("An index error has occurred. Please make sure index exists in cache.")
+    print("An index error has occurred! Please make sure index exists in cache.")
     ext(1)
 except ValueError:
     print("Please enter proper arguments.")

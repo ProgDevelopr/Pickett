@@ -79,23 +79,17 @@ try:
             if cache:
                 if len(argv)==1:
                     for k,v in cache.items(): # k = keys, v = arrays
-                        if v == []:
-                            print(f"* {k}: Empty key\n")
-                        else:
-                            tree_obj = utils.TreeView(str(k))
-                            tree_obj.add_branches([str(x).replace("\n","\\n") for x in v])
-                            tree_obj.view(listing = True)
+                        tree_obj = utils.TreeView(str(k))
+                        tree_obj.add_branches([str(x).replace("\n","\\n") for x in v])
+                        tree_obj.view(listing = True)
                 else:
                     key = argv[1]
                     if not key in cache:
                         print(f"Key \"{key}\" does not exist!")
                         ext(1)
-                    if cache[key] == []:
-                        print(f"* {key}: Empty key\n")
-                    else:
-                        tree_obj = utils.TreeView(str(key))
-                        tree_obj.add_branches([str(x).replace("\n","\\n") for x in cache[key]])
-                        tree_obj.view(listing = True)
+                    tree_obj = utils.TreeView(str(key))
+                    tree_obj.add_branches([str(x).replace("\n","\\n") for x in cache[key]])
+                    tree_obj.view(listing = True)
             else:
                 print("No keys found in cache.")
 
@@ -133,16 +127,6 @@ try:
             else:
                 print("No keys found in cache!")
 
-        case "stats":
-            tree_obj = utils.TreeView("config.json")
-            tree_obj.add_branches([
-                f"{utils.cache_size()}",
-                f"{len(cache.keys())} keys",
-                f"{sum(len(x) for x in cache.values())} values"
-            ])
-            utils.value_warning(cache, tree_obj)
-            tree_obj.view()
-
         case "import":
             if len(argv)<2:
                 print("Please enter file name.")
@@ -166,6 +150,16 @@ try:
             with open(EXPORT_NAME, mode="w", encoding="utf-8") as f:
                 dump(cache, f)
             print(f"Exported cache.json as \"{EXPORT_NAME}\".")
+            
+        case "stats":
+            tree_obj = utils.TreeView("config.json")
+            tree_obj.add_branches([
+                f"{utils.cache_size()}",
+                f"{len(cache.keys())} keys",
+                f"{sum(len(x) for x in cache.values())} values"
+            ])
+            utils.value_warning(cache, tree_obj)
+            tree_obj.view()
 
         case "where":
             print(f"Cache path: {utils.CACHE_PATH}")

@@ -1,7 +1,7 @@
 """ Utilities for Pickett """
 
 from json import load, dump
-from os.path import exists, getsize, expanduser
+from os.path import exists, getsize, expanduser, join
 
 class TreeView:
     """ Organizes data in a tree-like structure. """
@@ -21,24 +21,23 @@ class TreeView:
 
     def view(self, listing=False):
         """ Prints the tree. """
-        indexing=lambda x: ""
-        if listing:
-            indexing = lambda x: f"({x})"
-        print(f"* {self.header}")
-        for index, item in enumerate(self.branches):
-            condition = len(item)<35 or not listing
-            if index == len(self.branches)-1:
-                print(f"'-{indexing(index)} {item if condition else f'{item[0:35]}...'}\n")
-            else:
-                print(f"|-{indexing(index)} {item if condition else f'{item[0:35]}...'}")
 
-    def reset(self):
-        """ Deletes tree's content. (just in case) """
-        self.branches = []
+        if not self.branches:
+            print(f"* {self.header}: Empty key!\n")
+        else:
+            print(f"* {self.header}")
+            for index, item in enumerate(self.branches):
+                condition = len(item)>35 and listing
+                sep = f'({index})' if listing else ''
+
+                if index == len(self.branches)-1:
+                    print(f"\'-{sep} {f'{item[0:35]}...' if condition else item}\n")
+                else:
+                    print(f"|-{sep} {f'{item[0:35]}...' if condition else item}")
 
 VALUE_CAP = 3
-PICKETT_VER = 2.5
-CACHE_PATH = f"{expanduser('~')}\\cache.json"
+PICKETT_VER = 2.7
+CACHE_PATH = join(expanduser('~'), "cache.json")
 def load_cache():
     """
     Loads the cache file, creates one if it doesn't exist.
@@ -97,29 +96,29 @@ def all_keys_used(cache_obj: dict):
 
 def value_warning(cache_obj: dict, tree: TreeView):
     """ 
-    # DESC #
+    Gives a warning if all values are not used fully.
     
     Args:
         cache (dict): The cache itself.
     """
     if len(cache_obj.keys())*3 != sum(len(x) for x in cache_obj.values()):
-        tree.add_branches(["Not all keys are used!"])
+        tree.add_branches(["Some values are unused!"])
 
 def pickett_help(header: str):
     """ The help utility for pickett """
     tree_obj = TreeView(header)
-    tree_obj.add_branches([
+    tree_obj.add_branches((
         "pickett add <KEY> <Optional: FILE>",
         "pickett kill <KEY>/all",
         "pickett list <Optional: KEY>",
         "pickett truncate <KEY>/all",
         "pickett clean <KEY>/all",
         "pickett ow <FILE> <KEY> <Optional: RELEASE_INDEX>",
-        "pickett stats",
         "pickett import <JSON>",
         "pickett export <Optional: NAME>",
+        "pickett stats",
         "pickett where",
         "pickett version",
         "pickett help"
-    ])
+    ))
     tree_obj.view()
